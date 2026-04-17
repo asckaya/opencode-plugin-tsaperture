@@ -215,7 +215,17 @@ async function fetchApertureModels(baseUrl, apiKey, timeoutMs = 15_000) {
             throw new Error(`Failed to fetch models: ${response.status} ${response.statusText}`);
         }
         const data = await response.json();
-        return data.data || [];
+        const openAIModels = data.data ?? [];
+        const llamaCppModels = (data.models ?? []).map((model) => ({
+            ...model,
+            id: model.id || model.model || "",
+            object: model.object || "model",
+            created: model.created || 0,
+            owned_by: model.owned_by || "unknown",
+        }));
+        const mergedModels = [...openAIModels, ...llamaCppModels]
+            .filter((model) => model.id);
+        return Array.from(new Map(mergedModels.map((model) => [model.id, model])).values());
     }
     finally {
         clearTimeout(timer);
@@ -356,8 +366,8 @@ export const TailscaleAperturePlugin = async (_ctx, options) => {
                         delete config.provider[providerID];
                     }
                 }
-                const defaultGroupOnly = modelsByProvider.size === 1 && modelsByProvider.has("aperture");
-                if (!defaultGroupOnly) {
+                const hasDefaultGroup = modelsByProvider.has("aperture");
+                if (!hasDefaultGroup) {
                     delete config.provider.aperture;
                 }
                 console.log(`[TailscaleAperture] Registered ${modelsByProvider.size} Aperture provider groups for ${discoveredModels.length} discovered models`);

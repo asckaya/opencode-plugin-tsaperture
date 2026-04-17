@@ -21,7 +21,10 @@ interface ApertureModel {
 
 interface ApertureResponse {
   object: string;
-  data: ApertureModel[];
+  data?: ApertureModel[];
+  models?: Array<ApertureModel & {
+    model?: string;
+  }>;
 }
 
 interface ApertureConfig {
@@ -315,7 +318,20 @@ async function fetchApertureModels(baseUrl: string, apiKey: string, timeoutMs = 
     }
 
     const data = await response.json() as ApertureResponse;
-    return data.data || [];
+    const openAIModels = data.data ?? [];
+    const llamaCppModels = (data.models ?? []).map((model) => ({
+      ...model,
+      id: model.id || model.model || "",
+      object: model.object || "model",
+      created: model.created || 0,
+      owned_by: model.owned_by || "unknown",
+    }));
+    const mergedModels = [...openAIModels, ...llamaCppModels]
+      .filter((model) => model.id);
+
+    return Array.from(
+      new Map(mergedModels.map((model) => [model.id, model])).values(),
+    );
   } finally {
     clearTimeout(timer);
   }
@@ -475,8 +491,8 @@ export const TailscaleAperturePlugin: Plugin = async (_ctx, options) => {
           }
         }
 
-        const defaultGroupOnly = modelsByProvider.size === 1 && modelsByProvider.has("aperture");
-        if (!defaultGroupOnly) {
+        const hasDefaultGroup = modelsByProvider.has("aperture");
+        if (!hasDefaultGroup) {
           delete config.provider.aperture;
         }
 
