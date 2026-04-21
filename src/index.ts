@@ -4,6 +4,7 @@ import { homedir } from "os";
 import { join } from "path";
 import { readFile } from "fs/promises";
 import { platform } from "process";
+import { createRequire } from "module";
 
 interface ApertureModel {
   id: string;
@@ -443,6 +444,10 @@ export const TailscaleAperturePlugin: Plugin = async (input, options) => {
       }).catch(() => {});
     },
   };
+
+  const require = createRequire(import.meta.url);
+  const pkg = require("../package.json") as { name: string; version: string };
+  logger.log(`[TailscaleAperture] ${pkg.name} v${pkg.version}`);
 
   const fileConfig = await loadApertureConfig(logger);
   const rawBaseUrl = (options?.baseUrl as string) || process.env.APERTURE_BASE_URL || fileConfig.baseUrl;

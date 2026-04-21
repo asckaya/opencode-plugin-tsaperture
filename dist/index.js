@@ -3,6 +3,7 @@ import { homedir } from "os";
 import { join } from "path";
 import { readFile } from "fs/promises";
 import { platform } from "process";
+import { createRequire } from "module";
 function normalizeBaseUrl(baseUrl) {
     return baseUrl.replace(/\/+$/, "").replace(/\/v1$/, "");
 }
@@ -325,6 +326,9 @@ export const TailscaleAperturePlugin = async (input, options) => {
             }).catch(() => { });
         },
     };
+    const require = createRequire(import.meta.url);
+    const pkg = require("../package.json");
+    logger.log(`[TailscaleAperture] ${pkg.name} v${pkg.version}`);
     const fileConfig = await loadApertureConfig(logger);
     const rawBaseUrl = options?.baseUrl || process.env.APERTURE_BASE_URL || fileConfig.baseUrl;
     const apiKey = options?.apiKey || process.env.APERTURE_API_KEY || fileConfig.apiKey || "";
