@@ -105,6 +105,10 @@ function getProviderGroup(model: ApertureModel): ApertureProviderGroup {
   };
 }
 
+function getModelProviderKey(model: ApertureModel): string {
+  return `${getProviderGroup(model).id}:${model.id}`;
+}
+
 function getModelDefaults(model: ApertureModel): Omit<ApertureModelConfig, "id" | "name"> {
   const id = model.id.toLowerCase();
   const providerID = model.metadata?.provider?.id?.toLowerCase();
@@ -265,7 +269,7 @@ async function waitForStableModels(
 ): Promise<ApertureModel[]> {
   const deadline = Date.now() + deadlineMs;
   let previousIds: string | undefined = previousModels.length > 0
-    ? previousModels.map((m) => m.id).sort().join("\n")
+    ? previousModels.map(getModelProviderKey).sort().join("\n")
     : undefined;
   let lastGoodResult: ApertureModel[] = previousModels;
 
@@ -277,7 +281,7 @@ async function waitForStableModels(
 
     try {
       const models = await fetchApertureModels(baseUrl, apiKey, Math.max(remaining, minFetchTimeoutMs));
-      const ids = models.map((m) => m.id).sort().join("\n");
+      const ids = models.map(getModelProviderKey).sort().join("\n");
 
       lastGoodResult = models;
 
@@ -326,7 +330,7 @@ async function fetchApertureModels(baseUrl: string, apiKey: string, timeoutMs = 
       .filter((model) => model.id);
 
     return Array.from(
-      new Map(mergedModels.map((model) => [model.id, model])).values(),
+      new Map(mergedModels.map((model) => [getModelProviderKey(model), model])).values(),
     );
   } finally {
     clearTimeout(timer);

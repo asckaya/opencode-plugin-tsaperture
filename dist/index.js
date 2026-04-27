@@ -29,6 +29,9 @@ function getProviderGroup(model) {
         name: `Aperture/${providerName}`,
     };
 }
+function getModelProviderKey(model) {
+    return `${getProviderGroup(model).id}:${model.id}`;
+}
 function getModelDefaults(model) {
     const id = model.id.toLowerCase();
     const providerID = model.metadata?.provider?.id?.toLowerCase();
@@ -172,7 +175,7 @@ function mergeModelConfig(defaults, existing = {}) {
 async function waitForStableModels(baseUrl, apiKey, { pollIntervalMs = 500, deadlineMs = 10_000, minFetchTimeoutMs = 2_000, previousModels = [] } = {}) {
     const deadline = Date.now() + deadlineMs;
     let previousIds = previousModels.length > 0
-        ? previousModels.map((m) => m.id).sort().join("\n")
+        ? previousModels.map(getModelProviderKey).sort().join("\n")
         : undefined;
     let lastGoodResult = previousModels;
     while (Date.now() < deadline) {
@@ -182,7 +185,7 @@ async function waitForStableModels(baseUrl, apiKey, { pollIntervalMs = 500, dead
         }
         try {
             const models = await fetchApertureModels(baseUrl, apiKey, Math.max(remaining, minFetchTimeoutMs));
-            const ids = models.map((m) => m.id).sort().join("\n");
+            const ids = models.map(getModelProviderKey).sort().join("\n");
             lastGoodResult = models;
             if (ids === previousIds) {
                 return models;
@@ -223,7 +226,7 @@ async function fetchApertureModels(baseUrl, apiKey, timeoutMs = 15_000) {
         }));
         const mergedModels = [...openAIModels, ...llamaCppModels]
             .filter((model) => model.id);
-        return Array.from(new Map(mergedModels.map((model) => [model.id, model])).values());
+        return Array.from(new Map(mergedModels.map((model) => [getModelProviderKey(model), model])).values());
     }
     finally {
         clearTimeout(timer);
