@@ -1,7 +1,7 @@
 {
   "name": "opencode-plugin-tsaperture",
   "version": "0.3.4",
-  "packageManager": "pnpm@10.33.2",
+  "packageManager": "pnpm@11.3.0",
   "description": "OpenCode plugin to automatically populate models from Tailscale Aperture API",
   "homepage": "https://github.com/SharkyRawr/opencode-plugin-tsaperture",
   "repository": {
@@ -35,11 +35,11 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@opencode-ai/plugin": "^1.14.20",
-    "@opencode-ai/sdk": "^1.14.20"
+    "@opencode-ai/plugin": "^1.15.10",
+    "@opencode-ai/sdk": "^1.15.10"
   },
   "devDependencies": {
-    "@types/node": "^22.19.17",
+    "@types/node": "^22.19.19",
     "@types/node-fetch": "^2.6.13",
     "typescript": "^5.9.3"
   },
