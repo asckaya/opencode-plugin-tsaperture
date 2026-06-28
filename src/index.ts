@@ -304,20 +304,21 @@ function getApertureRouteModelID(model: ApertureModel, providers?: Map<string, A
   return routeProviderID ? `${routeProviderID}/${model.id}` : model.id;
 }
 
-const PROTOCOL_NPM: Record<string, string> = {
-  openai_chat: "@ai-sdk/openai-compatible",
-  openai_responses: "@ai-sdk/openai",
-  anthropic_messages: "@ai-sdk/anthropic",
-  gemini_generate_content: "@ai-sdk/google",
-  google_generate_content: "@ai-sdk/google",
-  google_raw_predict: "@ai-sdk/google",
-  bedrock_converse: "@ai-sdk/amazon-bedrock",
-  bedrock_model_invoke: "@ai-sdk/amazon-bedrock",
-};
+const PROTOCOL_NPM: Array<[string, string]> = [
+  ["openai_responses", "@ai-sdk/openai"],
+  ["openai_chat", "@ai-sdk/openai-compatible"],
+  ["anthropic_messages", "@ai-sdk/anthropic"],
+  ["gemini_generate_content", "@ai-sdk/google"],
+  ["google_generate_content", "@ai-sdk/google"],
+  ["google_raw_predict", "@ai-sdk/google"],
+  ["bedrock_converse", "@ai-sdk/amazon-bedrock"],
+  ["bedrock_model_invoke", "@ai-sdk/amazon-bedrock"],
+];
 
 function getProviderNpmPackage(wireAPI: ApertureWireAPI, compatibility?: ApertureProviderCompatibility): string {
-  for (const [key, pkg] of Object.entries(PROTOCOL_NPM)) {
-    if (compatibility?.[key as keyof ApertureProviderCompatibility]) return pkg;
+  const compat = compatibility as Record<string, boolean | undefined> | undefined;
+  for (const [key, pkg] of PROTOCOL_NPM) {
+    if (compat?.[key]) return pkg;
   }
   return wireAPI === "anthropic" ? "@ai-sdk/anthropic" : "@ai-sdk/openai-compatible";
 }
