@@ -198,6 +198,8 @@ function normalizeModelLookup(value: string): string {
   return value
     .trim()
     .toLowerCase()
+    .replace(/\[.*?\]/g, "")
+    .replace(/-1m\b/g, "")
     .replace(/[_:\s.]+/g, "-")
     .replace(/\/+/g, "/")
     .replace(/-+/g, "-")
